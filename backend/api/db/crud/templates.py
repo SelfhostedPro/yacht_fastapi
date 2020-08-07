@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.session import make_transient
 
 from .. import models, schemas
-from ..utils import conv_ports2dict, conv_sysctls2dict
+from ...utils import conv_ports2dict, conv_sysctls2dict
 
 from datetime import datetime
 import urllib.request
@@ -120,3 +120,39 @@ def refresh_template(db: Session, template_id: id):
             raise
 
     return _template
+
+def read_app_template(db, app_id):
+    try:
+        template_item = db.query(models.TemplateItem).filter(models.TemplateItem.id == app_id).first()
+        return template_item
+    except Exception as exc:
+        print('App template not found')
+        raise
+
+def set_template_variables(db: Session, new_variables: models.TemplateVariables):
+    try:
+        template_vars = db.query(models.TemplateVariables).all()
+        
+        variables = []
+        t_vars = new_variables
+
+        for entry in t_vars:
+            template_variables = models.TemplateVariables(
+                variable=entry.variable,
+                replacement=entry.replacement
+            )
+            variables.append(template_variables)
+
+        db.query(models.TemplateVariables).delete()
+        db.add_all(variables)
+        db.commit()
+
+        new_template_variables = db.query(models.TemplateVariables).all()
+
+        return new_template_variables
+
+    except IntegrityError as err:
+        abort(400, { 'error': 'Bad Request' })
+
+def read_template_variables(db: Session):
+    return db.query(models.TemplateVariables).all()
