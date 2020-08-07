@@ -1,22 +1,23 @@
 from typing import List, Optional
+from datetime import datetime
 from pydantic import BaseModel, Json
 
 class TemplateItem(BaseModel):
     type: int
     title: str
     name: str
-    platform: int
-    description: int
-    logo: str
+    platform: str
+    description: Optional[str]
+    logo: Optional[str]
     image: str
-    notes: str
-    categories: Json
-    restart_poplicy: Json
-    ports: Json
-    volumes: Json
-    env: Json
-    sysctls: Json
-    cap_add: Json
+    notes: Optional[str]
+    categories: Optional[List]
+    restart_policy: str
+    ports: Optional[List]
+    volumes: Optional[List]
+    env: Optional[List]
+    sysctls: Optional[List]
+    cap_add: Optional[List]
     
     class Config:
         orm_mode = True
@@ -24,10 +25,13 @@ class TemplateItem(BaseModel):
 class TemplateBase(BaseModel):
     title: str
     url: str
-    items: List[TemplateItem] = []
 
     class Config:
         orm_mode = True
+class TemplateItems(TemplateBase):
+    items: List[TemplateItem] = []
+class TemplateRefresh(TemplateBase):
+    updated_at: datetime
 
 class TemplateVariables(BaseModel):
     variable: str

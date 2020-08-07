@@ -9,5 +9,5 @@ class User(Base):
 
     username = Column(String(64),
         nullable=False, unique=True, index=True)
-    password = Column(String(255),
+    hashed_password = Column(String(255),
         nullable=False, unique=False, index=False)

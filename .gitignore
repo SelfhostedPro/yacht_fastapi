@@ -1,0 +1,4 @@
+.vscode
+sql_app.db
+venv
+*.db

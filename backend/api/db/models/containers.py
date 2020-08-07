@@ -43,7 +43,7 @@ class TemplateItem(Base):
     logo = Column(Text,
         nullable=True, unique=False, index=False)
     image = Column(String(128),
-        nullable=True, unique=False, index=False)
+        nullable=False, unique=False, index=False)
     notes = Column(Text,
         nullable=True, unique=False, index=False)
     categories = Column(JSON,
