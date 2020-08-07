@@ -1,70 +1,72 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, JSON, Text, DateTime
 from sqlalchemy.orm import relationship
+
+from ..database import Base
 
 from datetime import datetime
 
-class Template(db.Model):
+class Template(Base):
     __tablename__ = 'templates'
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # alternative: DateTime(timezone=True), sqlalchemy.sql.func.now()
-    created_at = db.Column(db.DateTime,
+    created_at = Column(DateTime,
         nullable=False, unique=False, index=False,
         default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime,
+    updated_at = Column(DateTime,
         nullable=False, unique=False, index=False,
         default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # rename to title
-    title = db.Column(db.String(255),
+    title = Column(String(255),
         nullable=False, unique=True, index=True)
-    url = db.Column(db.Text,
+    url = Column(Text,
         nullable=False, unique=True, index=False)
 
     items = relationship('TemplateItem',
         backref='template', lazy='dynamic', cascade='all, delete-orphan')
 
-class TemplateItem(db.Model):
+class TemplateItem(Base):
     __tablename__ = 'template_item'
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
-    type= db.Column(db.Integer,
+    type= Column(Integer,
         nullable=False, unique=False, index=False)
-    title = db.Column(db.String(255),
+    title = Column(String(255),
         nullable=False, unique=False, index=True)
-    platform = db.Column(db.String(64),
+    platform = Column(String(64),
         nullable=False, unique=False, index=False)
-    description = db.Column(db.Text,
+    description = Column(Text,
         nullable=True, unique=False, index=False)
-    name = db.Column(db.String(255),
+    name = Column(String(255),
         nullable=True, unique=False, index=True)
-    logo = db.Column(db.Text,
+    logo = Column(Text,
         nullable=True, unique=False, index=False)
-    image = db.Column(db.String(128),
+    image = Column(String(128),
         nullable=True, unique=False, index=False)
-    notes = db.Column(db.Text,
+    notes = Column(Text,
         nullable=True, unique=False, index=False)
-    categories = db.Column(db.JSON,
+    categories = Column(JSON,
         nullable=True, unique=False, index=False)
-    restart_policy = db.Column(db.String(20),
+    restart_policy = Column(String(20),
         nullable=True, unique=False, index=False)
-    ports = db.Column(db.JSON,
+    ports = Column(JSON,
         nullable=True, unique=False, index=False)
-    volumes = db.Column(db.JSON,
+    volumes = Column(JSON,
         nullable=True, unique=False, index=False)
-    env = db.Column(db.JSON,
+    env = Column(JSON,
         nullable=True, unique=False, index=False)
-    sysctls = db.Column(db.JSON,
+    sysctls = Column(JSON,
         nullable=True, unique=False, index=False)
-    cap_add = db.Column(db.JSON,
+    cap_add = Column(JSON,
         nullable=True, unique=False, index=False)
-    template_id = db.Column(db.Integer,
-        db.ForeignKey('templates.id'))
+    template_id = Column(Integer,
+        ForeignKey('templates.id'))
 
-class TemplateVariables(db.Model):
+class TemplateVariables(Base):
     __tablename__ = 'template_variables'
-    id = db.Column(db.Integer, primary_key=True)
-    variable = db.Column(db.String(255),
+    id = Column(Integer, primary_key=True)
+    variable = Column(String(255),
         nullable=False, unique=True, index=True)
-    replacement = db.Column(db.String(255),
+    replacement = Column(String(255),
         nullable=False, unique=True, index=True)

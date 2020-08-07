@@ -1,10 +1,6 @@
 from typing import List, Optional
 from pydantic import BaseModel, Json
 
-class TemplateBase(BaseModel):
-    title: str
-    url: str
-
 class TemplateItem(BaseModel):
     type: int
     title: str
@@ -21,11 +17,33 @@ class TemplateItem(BaseModel):
     env: Json
     sysctls: Json
     cap_add: Json
-    template_id: int
+    
+    class Config:
+        orm_mode = True
+
+class TemplateBase(BaseModel):
+    title: str
+    url: str
+    items: List[TemplateItem] = []
+
+    class Config:
+        orm_mode = True
 
 class TemplateVariables(BaseModel):
     variable: str
     replacement: str
+
+    class Config:
+        orm_mode = True
+
+class UserBase(BaseModel):
+    username: str
+
+class UserCreate(UserBase):
+    password: str
+
+class User(UserBase):
+    id: int
 
     class Config:
         orm_mode = True

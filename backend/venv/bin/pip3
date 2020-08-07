@@ -1,4 +1,4 @@
-#!/home/user/dev/testing/Yacht/backend/venv/bin/python
+#!/home/user/dev/testing/yacht_fastapi/backend/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
