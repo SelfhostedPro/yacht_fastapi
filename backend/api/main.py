@@ -2,10 +2,13 @@ import uvicorn
 from fastapi import Depends, FastAPI, Header, HTTPException
 from .routers import auth, apps, templates
 
+from .db.crud import get_user
 from .db import models
-from .db.database import engine
+from .db.database import SessionLocal
+from .settings import Settings
 
 app = FastAPI()
+settings = Settings()
 
 app.include_router(
     apps.router,

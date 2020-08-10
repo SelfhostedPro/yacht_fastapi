@@ -4,6 +4,7 @@ from sqlalchemy import or_
 from passlib.context import CryptContext
 
 from .. import models, schemas
+from ...actions import auth
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
@@ -25,3 +26,11 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def authenticate_user(db: Session, user: schemas.UserLogin):
+    current_user = get_user(db, user.username)
+    if not current_user:
+        return None
+    if not auth.verify_password(user.password, current_user.hashed_password):
+        return None
+    return current_user
