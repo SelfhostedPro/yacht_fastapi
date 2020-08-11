@@ -1,13 +1,19 @@
 import uvicorn
 from fastapi import Depends, FastAPI, Header, HTTPException
-from .routers import auth, apps, templates
+from .routers import apps, templates
+import uuid
 
-from .db.crud import get_user
 from .db import models
 from .db.database import SessionLocal
-from .settings import Settings
+from .routers.templates import read_template_variables, set_template_variables, SessionLocal
+from sqlalchemy.orm import Session
 
-app = FastAPI()
+from .settings import Settings
+from .utils import get_db
+
+from .auth import fastapi_users, cookie_authentication, database, users, user_create, UserDB, get_password_hash
+
+app = FastAPI(root_path="/api")
 settings = Settings()
 
 app.include_router(
@@ -17,12 +23,16 @@ app.include_router(
     # dependencies=[Depends(get_token_header)],
     responses={404: {"description": "Not found"}},
 )
+
 app.include_router(
-    auth.router,
+    fastapi_users.get_auth_router(cookie_authentication),
     prefix="/auth",
-    tags=["auth"],
-    # dependencies=[Depends(get_token_header)],
-    responses={404: {"description": "Not found"}},
+    tags=["auth"]
+)
+app.include_router(
+    fastapi_users.get_users_router(cookie_authentication),
+    prefix="/users",
+    tags=["users"]
 )
 app.include_router(
     templates.router,
@@ -31,6 +41,42 @@ app.include_router(
     # dependencies=[Depends(get_token_header)],
     responses={404: {"description": "Not found"}},
 )
+
+@app.on_event("startup")
+async def startup():
+    await database.connect()
+    users_exist = await database.fetch_all(query=users.select())
+    if users_exist:
+        print("users exist")
+    else:
+        print("no users")
+        ### This is where I'm having trouble
+        hashed_password = get_password_hash(settings.ADMIN_PASSWORD)
+        base_user = UserDB(
+            id = uuid.uuid4(),
+            email = settings.ADMIN_EMAIL,
+            hashed_password = hashed_password,
+            is_active = True,
+            is_superuser = True
+        )
+        user_created = await user_create(base_user)
+    template_variables_exist = read_template_variables(SessionLocal())
+    if template_variables_exist:
+        print("template variables exist")
+    else:
+        print("No Variables yet!")
+        t_vars = settings.BASE_TEMPLATE_VARIABLES
+        t_var_list = []
+        for t in t_vars:
+            template_variables = models.TemplateVariables(
+                variable=t.get("variable"),
+                replacement=t.get("replacement")
+            )
+            t_var_list.append(template_variables)
+        set_template_variables(new_variables=t_var_list, db=SessionLocal())
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host='0.0.0.0', port=8000, reload=True)

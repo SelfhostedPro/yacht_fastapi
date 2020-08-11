@@ -24,7 +24,7 @@ class Template(Base):
         nullable=False, unique=True, index=False)
 
     items = relationship('TemplateItem',
-        backref='template', lazy='dynamic', cascade='all, delete-orphan')
+        backref='template', cascade='all, delete-orphan')
 
 class TemplateItem(Base):
     __tablename__ = 'template_item'

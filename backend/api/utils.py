@@ -2,6 +2,14 @@ from .db import models
 from .db.database import SessionLocal
 import re
 from typing import Dict, List
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 #For Templates
 REGEXP_PORT_ASSIGN = r'^(?:(?:\d{1,5}:)?\d{1,5}|:\d{1,5})/(?:tcp|udp)$'
 

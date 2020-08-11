@@ -13,8 +13,8 @@ import json
 def get_templates(db: Session):
     return db.query(models.Template).all()
 
-def get_template(db: Session, url: str):
-    return db.query(models.Template).filter(models.Template.url == url).first()
+def get_template(db: Session, id: int):
+    return db.query(models.Template).filter(models.Template.id == id).first()
 
 def get_template_items(db: Session, template_id: int):
     return db.query(models.TemplateItem).filter(models.TemplateItem.template_id == template_id).all()
