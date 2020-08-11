@@ -70,5 +70,5 @@ fastapi_users = FastAPIUsers(
 get_auth_router = fastapi_users.get_auth_router
 get_password_hash = get_password_hash
 
-user_db_model = models.BaseUserDB
-user_db = BaseUserDatabase[models.BaseUserDB]
+async def user_create(UD):
+    await fastapi_users.db.create(UD)

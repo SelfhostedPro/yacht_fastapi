@@ -5,11 +5,15 @@ import uuid
 
 from .db import models
 from .db.database import SessionLocal
+from .routers.templates import read_template_variables, set_template_variables, SessionLocal
+from sqlalchemy.orm import Session
+
 from .settings import Settings
+from .utils import get_db
 
-from .auth import fastapi_users, get_auth_router, cookie_authentication, database, users, UserCreate, get_password_hash, user_db_model, user_db
+from .auth import fastapi_users, cookie_authentication, database, users, user_create, UserDB, get_password_hash
 
-app = FastAPI()
+app = FastAPI(root_path="/api")
 settings = Settings()
 
 app.include_router(
@@ -21,11 +25,15 @@ app.include_router(
 )
 
 app.include_router(
-    get_auth_router(cookie_authentication),
+    fastapi_users.get_auth_router(cookie_authentication),
     prefix="/auth",
     tags=["auth"]
 )
-
+app.include_router(
+    fastapi_users.get_users_router(cookie_authentication),
+    prefix="/users",
+    tags=["users"]
+)
 app.include_router(
     templates.router,
     prefix="/templates",
@@ -39,26 +47,33 @@ async def startup():
     await database.connect()
     users_exist = await database.fetch_all(query=users.select())
     if users_exist:
-        print(users_exist)
+        print("users exist")
     else:
         print("no users")
         ### This is where I'm having trouble
-        # user_create_model
-        # hashed_password = get_password_hash(settings.ADMIN_PASSWORD)
-        # base_user = user_db_model(
-        #     id = uuid.uuid4(),
-        #     email= settings.ADMIN_EMAIL,
-        #     password= settings.ADMIN_PASSWORD,
-        #     hashed_password= hashed_password,
-        #     is_active= True,
-        #     is_superuser= True
-        # )
-        # db_user = user_db_model(
-        #     **base_user.create_update_dict(), id = uuid.uuid4()
-        # )
-        # await user_db.create(db_user)
-
-
+        hashed_password = get_password_hash(settings.ADMIN_PASSWORD)
+        base_user = UserDB(
+            id = uuid.uuid4(),
+            email = settings.ADMIN_EMAIL,
+            hashed_password = hashed_password,
+            is_active = True,
+            is_superuser = True
+        )
+        user_created = await user_create(base_user)
+    template_variables_exist = read_template_variables(SessionLocal())
+    if template_variables_exist:
+        print("template variables exist")
+    else:
+        print("No Variables yet!")
+        t_vars = settings.BASE_TEMPLATE_VARIABLES
+        t_var_list = []
+        for t in t_vars:
+            template_variables = models.TemplateVariables(
+                variable=t.get("variable"),
+                replacement=t.get("replacement")
+            )
+            t_var_list.append(template_variables)
+        set_template_variables(new_variables=t_var_list, db=SessionLocal())
 @app.on_event("shutdown")
 async def shutdown():
     await database.disconnect()

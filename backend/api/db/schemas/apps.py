@@ -2,8 +2,8 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 class PortsSchema(BaseModel):
-    cport: int
-    hport: int
+    cport: str
+    hport: Optional[str]
     proto: str
 
 class VolumesSchema(BaseModel):
@@ -29,7 +29,7 @@ class DeployForm(BaseModel):
     volumes: Optional[List[VolumesSchema]]
     env: Optional[List[EnvSchema]]
     sysctls: Optional[List[SysctlsSchema]]
-    cap_add: Optional[str]
+    cap_add: Optional[List[str]]
 # LOGS #
 class DeployLogs(BaseModel):
     logs: str
