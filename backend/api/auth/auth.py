@@ -36,7 +36,7 @@ class UserDB(User, models.BaseUserDB):
     pass
 
 
-DATABASE_URL = "sqlite:///./sql_app.db"
+DATABASE_URL = settings.SQLALCHEMY_DATABASE_URI
 
 database = databases.Database(DATABASE_URL)
 

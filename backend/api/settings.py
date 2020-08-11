@@ -2,6 +2,8 @@ import os
 import secrets
 from pydantic import BaseSettings
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 class Settings(BaseSettings):
     app_name: str = "Yacht API"
     SECRET_KEY = os.environ.get('SECRET_KEY', secrets.token_hex(16))
@@ -25,3 +27,5 @@ class Settings(BaseSettings):
             {"variable": "!localtime", "replacement": "/etc/localtime"},
             {"variable": "!logs", "replacement": "/yacht/AppData/Logs"},
             ]
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL',
+        'sqlite:///config/data.sqlite')
